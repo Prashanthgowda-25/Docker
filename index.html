@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✈️ SkyHigh | flight ticket booking</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #0b1424, #05080f 80%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* animated stars / clouds background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #ffffff33, transparent),
+                radial-gradient(2px 2px at 40px 70px, #ffffff1a, transparent),
+                radial-gradient(3px 3px at 120px 180px, #ffffff22, transparent),
+                radial-gradient(2px 2px at 300px 400px, #ffffff1a, transparent),
+                radial-gradient(4px 4px at 500px 200px, #ffffff11, transparent),
+                radial-gradient(2px 2px at 800px 500px, #ffffff22, transparent),
+                radial-gradient(3px 3px at 1000px 100px, #ffffff1a, transparent);
+            background-size: 1200px 800px;
+            background-repeat: repeat;
+            animation: drift 120s linear infinite;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        @keyframes drift {
+            0% { background-position: 0 0; }
+            100% { background-position: 300px 200px; }
+        }
+
+        .flight-booking {
+            max-width: 1250px;
+            width: 100%;
+            background: rgba(12, 20, 35, 0.72);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: 3rem;
+            padding: 2rem 2.2rem 2.5rem;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(100, 210, 255, 0.12) inset;
+            border: 1px solid rgba(120, 220, 255, 0.18);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 2.1rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #e3f0ff;
+        }
+
+        .logo-icon {
+            font-size: 2.5rem;
+            filter: drop-shadow(0 0 15px #4db8ff);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .logo span {
+            background: linear-gradient(135deg, #7ad0ff, #3b9eff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px #3b9eff66;
+        }
+
+        .flight-route-badge {
+            background: rgba(60, 150, 255, 0.15);
+            border: 1px solid #3b9eff55;
+            border-radius: 3rem;
+            padding: 0.5rem 1.6rem;
+            color: #b8dcff;
+            font-weight: 500;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            backdrop-filter: blur(5px);
+        }
+
+        .flight-route-badge i {
+            font-size: 1.3rem;
+            filter: drop-shadow(0 0 8px #4db8ff);
+        }
+
+        /* flights row */
+        .flights-container {
+            display: flex;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .flight-card {
+            flex: 1 1 200px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(100, 200, 255, 0.2);
+            border-radius: 2rem;
+            padding: 1.2rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flight-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #3b9eff, #7ad0ff);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .flight-card:hover {
+            background: rgba(60, 150, 255, 0.08);
+            border-color: #3b9eff88;
+            transform: translateY(-4px);
+            box-shadow: 0 15px 30px -10px #000000aa, 0 0 20px #3b9eff22;
+        }
+
+        .flight-card.active {
+            background: linear-gradient(145deg, rgba(40, 120, 220, 0.25), rgba(20, 60, 120, 0.35));
+            border-color: #4db8ff;
+            box-shadow: 0 0 30px #3b9eff44, 0 12px 30px -10px #000;
+        }
+
+        .flight-card.active::after {
+            opacity: 1;
+        }
+
+        .airline {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: #d4eaff;
+            font-size: 1rem;
+        }
+
+        .airline-icon {
+            font-size: 1.5rem;
+        }
+
+        .flight-time {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.3rem;
+            margin: 0.3rem 0;
+        }
+
+        .flight-time small {
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: #8fb8e0;
+            margin-left: 4px;
+        }
+
+        .duration {
+            font-size: 0.8rem;
+            color: #7da5cc;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .price-tag {
+            font-weight: 700;
+            font-size: 1.6rem;
+            color: #7ad0ff;
+            text-shadow: 0 0 20px #3b9eff88;
+            margin-top: 0.2rem;
+        }
+
+        .price-tag small {
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: #a0b8d0;
+            margin-left: 4px;
+        }
+
+        /* flight path visual */
+        .route-visual {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.8rem;
+            margin: 0.5rem 0 0.2rem;
+            font-weight: 500;
+            color: #b8d4f0;
+        }
+
+        .route-line {
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, #3b9eff, #7ad0ff, #3b9eff);
+            border-radius: 2px;
+            position: relative;
+            opacity: 0.5;
+        }
+
+        .route-line::after {
+            content: '✈';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1rem;
+            color: #7ad0ff;
+            animation: fly 4s linear infinite;
+        }
+
+        @keyframes fly {
+            0% { left: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+
+        /* seat map area */
+        .seat-section {
+            margin: 2rem 0 1rem;
+        }
+
+        .section-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #b0c8e0;
+            font-size: 1rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            margin-bottom: 1.2rem;
+            text-transform: uppercase;
+        }
+
+        .section-label span {
+            background: #1a2a3e;
+            padding: 0.2rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+            color: #7ad0ff;
+            border: 1px solid #3b9eff44;
+        }
+
+        .cabin {
+            background: rgba(8, 16, 28, 0.6);
+            border-radius: 2.5rem;
+            padding: 2rem 1.5rem 1.5rem;
+            border: 1px solid #2e4a6a;
+            box-shadow: inset 0 0 40px #00000066, 0 10px 30px -10px #000;
+            position: relative;
+        }
+
+        .cabin::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #3b9eff88, #7ad0ff, #3b9eff88, transparent);
+            border-radius: 4px;
+            filter: blur(2px);
+        }
+
+        .cockpit {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .cockpit-icon {
+            font-size: 2.5rem;
+            color: #3b9eff;
+            opacity: 0.8;
+            filter: drop-shadow(0 0 15px #3b9eff);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+
+        .seat-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            align-items: center;
+        }
+
+        .seat-row {
+            display: flex;
+            gap: 0.7rem;
+            justify-content: center;
+            flex-wrap: nowrap;
+        }
+
+        .seat {
+            width: 52px;
+            height: 52px;
+            border-radius: 16px 16px 8px 8px;
+            background: #1a2538;
+            border: 1px solid #3b5a7a;
+            color: #8aaec9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.18s ease;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #0b111e, 0 6px 12px rgba(0, 0, 0, 0.6);
+            user-select: none;
+            position: relative;
+            transform: translateY(0);
+        }
+
+        .seat:not(.occupied):hover {
+            background: #2c405c;
+            border-color: #7ad0ff;
+            color: #d4f0ff;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 0 #0b111e, 0 10px 20px #3b9eff33;
+        }
+
+        .seat.selected {
+            background: linear-gradient(145deg, #3b9eff, #1e6fd0);
+            border-color: #b0e0ff;
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 0 22px #3b9eff, 0 8px 0 #0a3a6a;
+            transform: translateY(-3px);
+        }
+
+        .seat.occupied {
+            background: #0f1622;
+            border-color: #1e2a3a;
+            color: #2a3a50;
+            box-shadow: 0 4px 0 #060a10, inset 0 0 10px #00000088;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .seat.occupied::after {
+            content: "✕";
+            position: absolute;
+            font-size: 1.1rem;
+            color: #3d5068;
+            font-weight: 300;
+        }
+
+        .seat.occupied span {
+            display: none;
+        }
+
+        .seat span {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* legend */
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            margin: 1.5rem 0 1rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #9bb5d0;
+            font-size: 0.9rem;
+        }
+
+        .legend-box {
+            width: 30px;
+            height: 30px;
+            border-radius: 10px 10px 5px 5px;
+            background: #1a2538;
+            border: 1px solid #3b5a7a;
+            box-shadow: 0 4px 0 #0b111e;
+        }
+
+        .legend-box.selected {
+            background: #3b9eff;
+            border-color: #b0e0ff;
+            box-shadow: 0 0 15px #3b9eff, 0 4px 0 #0a3a6a;
+        }
+
+        .legend-box.occupied {
+            background: #0f1622;
+            border-color: #1e2a3a;
+            box-shadow: 0 2px 0 #060a10;
+        }
+
+        /* booking summary */
+        .booking-summary {
+            background: rgba(8, 18, 30, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 2rem;
+            padding: 1.8rem 2rem;
+            margin-top: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid #3b9eff33;
+            box-shadow: 0 20px 40px -15px #000000ee, 0 0 30px #3b9eff11;
+        }
+
+        .summary-info {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .info-block {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #7a9aba;
+            margin-bottom: 0.3rem;
+        }
+
+        .info-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #d4eaff;
+            line-height: 1.2;
+        }
+
+        .info-value small {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #8fb0cc;
+            margin-left: 4px;
+        }
+
+        .price-highlight {
+            background: linear-gradient(135deg, #7ad0ff, #3b9eff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: 2.1rem;
+            font-weight: 800;
+            text-shadow: 0 0 30px #3b9eff88;
+        }
+
+        .book-btn {
+            background: linear-gradient(145deg, #3b9eff, #1e6fd0);
+            border: none;
+            border-radius: 4rem;
+            padding: 1.2rem 3rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: white;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            box-shadow: 0 12px 25px -5px #3b9eff77, 0 5px 0 #0a3a6a;
+            border: 1px solid #a0d8ff88;
+        }
+
+        .book-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 30px -5px #3b9effaa, 0 8px 0 #0a3a6a;
+            filter: brightness(1.1);
+        }
+
+        .book-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 6px 15px -3px #3b9eff77, 0 2px 0 #0a3a6a;
+        }
+
+        .book-btn:disabled {
+            opacity: 0.5;
+            transform: translateY(0);
+            box-shadow: 0 5px 0 #0a3a6a;
+            cursor: not-allowed;
+            filter: grayscale(0.5);
+        }
+
+        /* toast */
+        .toast-message {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(150%);
+            background: #0f1a2cee;
+            backdrop-filter: blur(12px);
+            color: #d4eaff;
+            padding: 1rem 2.8rem;
+            border-radius: 4rem;
+            font-weight: 500;
+            box-shadow: 0 20px 40px -8px #000000ee, 0 0 0 1px #3b9eff55, 0 0 30px #3b9eff22;
+            transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+            z-index: 999;
+            border-left: 5px solid #3b9eff;
+            letter-spacing: 0.3px;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1rem;
+        }
+
+        .toast-message.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* responsive */
+        @media (max-width: 850px) {
+            .flight-booking {
+                padding: 1.5rem 1.2rem 2rem;
+            }
+            .seat {
+                width: 42px;
+                height: 42px;
+                font-size: 0.75rem;
+                border-radius: 12px 12px 6px 6px;
+            }
+            .seat-row {
+                gap: 0.5rem;
+            }
+            .flight-time {
+                font-size: 1.1rem;
+            }
+            .price-tag {
+                font-size: 1.3rem;
+            }
+            .booking-summary {
+                flex-direction: column;
+                gap: 1.5rem;
+                align-items: stretch;
+            }
+            .book-btn {
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 550px) {
+            .seat {
+                width: 32px;
+                height: 32px;
+                font-size: 0.65rem;
+                border-radius: 8px 8px 4px 4px;
+            }
+            .seat-row {
+                gap: 0.35rem;
+            }
+            .legend {
+                gap: 1rem;
+            }
+            .flight-card {
+                padding: 1rem;
+            }
+            .summary-info {
+                gap: 1rem;
+            }
+            .logo {
+                font-size: 1.6rem;
+            }
+        }
+
+        /* plane row indicator */
+        .row-label {
+            display: flex;
+            justify-content: center;
+            gap: 0.7rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.2rem;
+            color: #5a7a9a;
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="flight-booking">
+        <!-- header -->
+        <div class="header">
+            <div class="logo">
+                <span class="logo-icon">✈️</span>
+                <span>SkyHigh</span>
+            </div>
+            <div class="flight-route-badge">
+                <i>🛫</i> DEL → DXB
+                <i>🛬</i>
+            </div>
+        </div>
+
+        <!-- flight options -->
+        <div class="flights-container" id="flightOptions">
+            <div class="flight-card active" data-flight="AI-203" data-price="320" data-depart="06:30" data-arrive="09:10">
+                <div class="airline"><span class="airline-icon">🇮🇳</span> Air India</div>
+                <div class="flight-time">06:30 <small>DEL</small> <span style="flex:1; text-align:center;">→</span> 09:10 <small>DXB</small></div>
+                <div class="duration">⏱ 2h 40m • non-stop</div>
+                <div class="price-tag">$320 <small>USD</small></div>
+            </div>
+            <div class="flight-card" data-flight="EK-509" data-price="410" data-depart="11:15" data-arrive="13:45">
+                <div class="airline"><span class="airline-icon">🇦🇪</span> Emirates</div>
+                <div class="flight-time">11:15 <small>DEL</small> <span style="flex:1; text-align:center;">→</span> 13:45 <small>DXB</small></div>
+                <div class="duration">⏱ 2h 30m • non-stop</div>
+                <div class="price-tag">$410 <small>USD</small></div>
+            </div>
+            <div class="flight-card" data-flight="6E-17" data-price="275" data-depart="16:40" data-arrive="19:20">
+                <div class="airline"><span class="airline-icon">🇮🇳</span> IndiGo</div>
+                <div class="flight-time">16:40 <small>DEL</small> <span style="flex:1; text-align:center;">→</span> 19:20 <small>DXB</small></div>
+                <div class="duration">⏱ 2h 40m • non-stop</div>
+                <div class="price-tag">$275 <small>USD</small></div>
+            </div>
+        </div>
+
+        <!-- seat selection -->
+        <div class="seat-section">
+            <div class="section-label">
+                <span>🪑</span> Select your seat
+                <span style="margin-left: auto;">Boeing 777-300ER</span>
+            </div>
+            <div class="cabin">
+                <div class="cockpit">
+                    <div class="cockpit-icon">🛩️</div>
+                </div>
+                <div class="seat-grid" id="seatGrid">
+                    <!-- generated by js -->
+                </div>
+                <!-- row labels -->
+                <div class="row-label" id="rowLabels"></div>
+            </div>
+        </div>
+
+        <!-- legend -->
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box"></div>
+                <span>Available</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box selected"></div>
+                <span>Selected</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box occupied"></div>
+                <span>Occupied</span>
+            </div>
+        </div>
+
+        <!-- booking summary -->
+        <div class="booking-summary">
+            <div class="summary-info">
+                <div class="info-block">
+                    <div class="info-label">Flight</div>
+                    <div class="info-value" id="selectedFlight">AI-203</div>
+                </div>
+                <div class="info-block">
+                    <div class="info-label">Seats</div>
+                    <div class="info-value" id="selectedSeatsCount">0</div>
+                </div>
+                <div class="info-block">
+                    <div class="info-label">Total</div>
+                    <div class="info-value price-highlight" id="totalPrice">$0</div>
+                </div>
+            </div>
+            <button class="book-btn" id="bookButton" disabled>
+                <span>🎫</span> Confirm Booking
+            </button>
+        </div>
+    </div>
+
+    <!-- toast -->
+    <div class="toast-message" id="toast">
+        <span>✅</span> <span id="toastText">Booking confirmed! Have a safe flight.</span>
+    </div>
+
+    <script>
+        (function() {
+            // ----- CONFIG -----
+            const ROWS = 6;          // A-F
+            const COLS = 8;          // 1-8 (with aisle after 3rd)
+            // occupied seats (row, col) 0-indexed
+            const OCCUPIED_SEATS = [
+                [0, 1], [0, 4], [0, 7],
+                [1, 0], [1, 5],
+                [2, 2], [2, 3], [2, 6],
+                [3, 0], [3, 4], [3, 7],
+                [4, 1], [4, 3], [4, 5],
+                [5, 2], [5, 6], [5, 7]
+            ];
+
+            // state
+            let currentFlight = 'AI-203';
+            let currentPrice = 320;      // per seat
+            let selectedSeats = new Set(); // "row-col" strings
+
+            // DOM
+            const seatGrid = document.getElementById('seatGrid');
+            const rowLabels = document.getElementById('rowLabels');
+            const selectedFlightEl = document.getElementById('selectedFlight');
+            const selectedSeatsCountEl = document.getElementById('selectedSeatsCount');
+            const totalPriceEl = document.getElementById('totalPrice');
+            const bookButton = document.getElementById('bookButton');
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toastText');
+            const flightCards = document.querySelectorAll('.flight-card');
+
+            // ---- toast helper ----
+            function showToast(message, isSuccess = true) {
+                toastText.textContent = message;
+                toast.style.borderLeftColor = isSuccess ? '#3b9eff' : '#ff6b6b';
+                toast.style.color = isSuccess ? '#d4eaff' : '#ffb3b3';
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3200);
+            }
+
+            // ---- render seat map ----
+            function renderSeats() {
+                seatGrid.innerHTML = '';
+                rowLabels.innerHTML = '';
+
+                for (let r = 0; r < ROWS; r++) {
+                    const rowDiv = document.createElement('div');
+                    rowDiv.classList.add('seat-row');
+
+                    // add aisle gap after col 3 (index 3)
+                    for (let c = 0; c < COLS; c++) {
+                        // insert aisle spacer before column 4 (index 3) if not first
+                        if (c === 3) {
+                            const aisle = document.createElement('div');
+                            aisle.style.width = '24px';
+                            aisle.style.flexShrink = '0';
+                            rowDiv.appendChild(aisle);
+                        }
+
+                        const seat = document.createElement('div');
+                        seat.classList.add('seat');
+                        const seatId = `${r}-${c}`;
+                        seat.dataset.seatId = seatId;
+
+                        const isOccupied = OCCUPIED_SEATS.some(([occR, occC]) => occR === r && occC === c);
+                        if (isOccupied) seat.classList.add('occupied');
+
+                        const rowLetter = String.fromCharCode(65 + r);
+                        const seatLabel = `${rowLetter}${c + 1}`;
+                        const span = document.createElement('span');
+                        span.textContent = seatLabel;
+                        seat.appendChild(span);
+
+                        if (selectedSeats.has(seatId)) seat.classList.add('selected');
+
+                        if (!isOccupied) {
+                            seat.addEventListener('click', () => toggleSeat(seat, seatId));
+                        }
+
+                        rowDiv.appendChild(seat);
+                    }
+                    seatGrid.appendChild(rowDiv);
+
+                    // row label
+                    const labelDiv = document.createElement('div');
+                    labelDiv.style.display = 'flex';
+                    labelDiv.style.justifyContent = 'center';
+                    labelDiv.style.gap = '0.7rem';
+                    labelDiv.style.marginBottom = '0.2rem';
+                    labelDiv.style.color = '#5a7a9a';
+                    labelDiv.style.fontSize = '0.65rem';
+                    labelDiv.style.letterSpacing = '2px';
+                    // add row letter indicator (optional, but we add after the row)
+                }
+
+                // add column numbers (simple)
+                const colLabelDiv = document.createElement('div');
+                colLabelDiv.style.display = 'flex';
+                colLabelDiv.style.justifyContent = 'center';
+                colLabelDiv.style.gap = '0.7rem';
+                colLabelDiv.style.marginTop = '0.8rem';
+                colLabelDiv.style.paddingLeft = '0';
+                colLabelDiv.style.color = '#5a7a9a';
+                colLabelDiv.style.fontSize = '0.7rem';
+                colLabelDiv.style.letterSpacing = '1px';
+                colLabelDiv.style.fontWeight = '300';
+
+                // approximate spacing due to aisle
+                for (let c = 1; c <= COLS; c++) {
+                    const num = document.createElement('span');
+                    num.textContent = c;
+                    num.style.width = '52px';
+                    num.style.textAlign = 'center';
+                    if (c === 4) {
+                        // add extra space for aisle
+                        const spacer = document.createElement('span');
+                        spacer.style.width = '24px';
+                        spacer.textContent = '';
+                        colLabelDiv.appendChild(spacer);
+                    }
+                    colLabelDiv.appendChild(num);
+                }
+                // replace rowLabels with column numbers (better UX)
+                rowLabels.innerHTML = '';
+                rowLabels.appendChild(colLabelDiv);
+            }
+
+            // ---- toggle seat ----
+            function toggleSeat(seatEl, seatId) {
+                if (seatEl.classList.contains('occupied')) return;
+
+                if (selectedSeats.has(seatId)) {
+                    selectedSeats.delete(seatId);
+                    seatEl.classList.remove('selected');
+                } else {
+                    selectedSeats.add(seatId);
+                    seatEl.classList.add('selected');
+                }
+                updateSummary();
+            }
+
+            // ---- update summary ----
+            function updateSummary() {
+                const count = selectedSeats.size;
+                selectedSeatsCountEl.textContent = count;
+                totalPriceEl.textContent = `$${count * currentPrice}`;
+                bookButton.disabled = count === 0;
+                selectedFlightEl.textContent = currentFlight;
+            }
+
+            // ---- clear selections ----
+            function clearSelections() {
+                selectedSeats.clear();
+                document.querySelectorAll('.seat.selected').forEach(s => s.classList.remove('selected'));
+                updateSummary();
+            }
+
+            // ---- change flight ----
+            function changeFlight(flightId, price) {
+                currentFlight = flightId;
+                currentPrice = price;
+                selectedFlightEl.textContent = flightId;
+                clearSelections();
+                updateSummary();
+            }
+
+            // ---- init ----
+            function init() {
+                renderSeats();
+                updateSummary();
+
+                // flight card click
+                flightCards.forEach(card => {
+                    card.addEventListener('click', () => {
+                        flightCards.forEach(c => c.classList.remove('active'));
+                        card.classList.add('active');
+                        const flight = card.dataset.flight;
+                        const price = parseInt(card.dataset.price, 10);
+                        changeFlight(flight, price);
+                    });
+                });
+
+                // book button
+                bookButton.addEventListener('click', () => {
+                    const count = selectedSeats.size;
+                    if (count === 0) return;
+
+                    const seatList = Array.from(selectedSeats).map(id => {
+                        const [r, c] = id.split('-').map(Number);
+                        return `${String.fromCharCode(65 + r)}${c + 1}`;
+                    }).sort().join(', ');
+
+                    const total = count * currentPrice;
+                    showToast(`✈️ ${currentFlight} · ${count} seat${count > 1 ? 's' : ''} (${seatList}) · $${total}`, true);
+
+                    // Mark selected seats as occupied (simulate booking)
+                    selectedSeats.forEach(seatId => {
+                        const [r, c] = seatId.split('-').map(Number);
+                        if (!OCCUPIED_SEATS.some(([occR, occC]) => occR === r && occC === c)) {
+                            OCCUPIED_SEATS.push([r, c]);
+                        }
+                    });
+
+                    clearSelections();
+                    renderSeats();   // refresh with new occupied
+                    updateSummary();
+                });
+
+                // set initial flight from active card
+                const activeCard = document.querySelector('.flight-card.active');
+                if (activeCard) {
+                    currentFlight = activeCard.dataset.flight;
+                    currentPrice = parseInt(activeCard.dataset.price, 10);
+                    selectedFlightEl.textContent = currentFlight;
+                }
+                updateSummary();
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>
